@@ -13,6 +13,9 @@ import pickle
 import argparse
 
 import warnings
+
+from losses import mse_loss
+
 warnings.filterwarnings("ignore")
 
 # Numpy & Scipy imports
@@ -159,7 +162,7 @@ def training_loop(train_dataloader, opts):
 
             # FILL THIS IN
             # 1. Compute the discriminator loss on real images
-            D_real_loss = (D(real_images) - 1).pow(2).sum() / (2 * len(real_images))
+            D_real_loss = mse_loss(D(real_images), 1) / 2
 
             # 2. Sample noise
             noise = sample_noise(opts.noise_size)
@@ -168,7 +171,7 @@ def training_loop(train_dataloader, opts):
             fake_images = G(noise)
 
             # 4. Compute the discriminator loss on the fake images
-            D_fake_loss = D(fake_images).pow(2).sum() / (2 * len(fake_images))
+            D_fake_loss = mse_loss(D(fake_images), 0) / 2
 
             # 5. Compute the total discriminator loss
             D_total_loss = D_real_loss + D_fake_loss
@@ -190,7 +193,7 @@ def training_loop(train_dataloader, opts):
             fake_images = G(noise)
 
             # 3. Compute the generator loss
-            G_loss = (D(fake_images) - 1).pow(2).sum() / len(fake_images)
+            G_loss = mse_loss(D(fake_images), 1)
 
             G_loss.backward()
             g_optimizer.step()
