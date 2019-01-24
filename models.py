@@ -50,9 +50,9 @@ class DCGenerator(nn.Module):
         ###########################################
 
         self.deconv1 = deconv(noise_size, conv_dim*4, 4, padding=0, stride=1)
-        self.deconv2 = deconv(conv_dim*4, conv_dim*2, 3, padding=1, stride=2)
-        self.deconv3 = deconv(conv_dim*2, conv_dim, 3, padding=1, stride=2)
-        self.deconv4 = deconv(conv_dim, 3, 3, padding=1, stride=2, batch_norm=False)
+        self.deconv2 = deconv(conv_dim*4, conv_dim*2, 4, padding=1, stride=2)
+        self.deconv3 = deconv(conv_dim*2, conv_dim, 4, padding=1, stride=2)
+        self.deconv4 = deconv(conv_dim, 3, 4, padding=1, stride=2, batch_norm=False)
 
     def forward(self, z):
         """Generates an image given a sample of random noise.
@@ -67,9 +67,13 @@ class DCGenerator(nn.Module):
         """
 
         out = F.relu(self.deconv1(z))
+        # print("G: ", out.shape)
         out = F.relu(self.deconv2(out))
+        # print("G: ", out.shape)
         out = F.relu(self.deconv3(out))
+        # print("G: ", out.shape)
         out = F.tanh(self.deconv4(out))
+        # print("G: ", out.shape)
         return out
 
 
@@ -140,13 +144,13 @@ class DCDiscriminator(nn.Module):
         ###########################################
 
         # 32x32x3 --> 16x16xconv_dim
-        self.conv1 = conv(3, conv_dim, 3, stride=2, padding=1)
+        self.conv1 = conv(3, conv_dim, 4, stride=2, padding=1)
 
         # 16x16xconv_dim --> 8x8x2*conv_dim
-        self.conv2 = conv(conv_dim, conv_dim*2, 3, stride=2, padding=1)
+        self.conv2 = conv(conv_dim, conv_dim*2, 4, stride=2, padding=1)
 
         # 8x8x2*conv_dim --> 4x4x4*conv_dim
-        self.conv3 = conv(conv_dim*2, conv_dim*4, 3, stride=2, padding=1)
+        self.conv3 = conv(conv_dim*2, conv_dim*4, 4, stride=2, padding=1)
 
         # 4x4x4*conv_dim --> 1x1x1
         self.conv4 = conv(conv_dim*4, 1, 4, stride=1, padding=0, batch_norm=False)
@@ -154,8 +158,11 @@ class DCDiscriminator(nn.Module):
     def forward(self, x):
 
         out = F.relu(self.conv1(x))
+        # print(out.shape)
         out = F.relu(self.conv2(out))
+        # print(out.shape)
         out = F.relu(self.conv3(out))
+        # print(out.shape)
 
         out = self.conv4(out).squeeze()
         out = F.sigmoid(out)
