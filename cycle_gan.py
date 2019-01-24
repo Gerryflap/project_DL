@@ -23,6 +23,9 @@ import pickle
 import argparse
 
 import warnings
+
+from losses import mse_loss
+
 warnings.filterwarnings("ignore")
 
 # Torch imports
@@ -244,13 +247,13 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         fake_X = G_YtoX(images_Y)
 
         # 3. Compute the loss for D_X
-        D_X_loss = D_X(fake_X).pow(2).sum() / len(fake_X)
+        D_X_loss = mse_loss(D_X(fake_X), 0)
 
         # 4. Generate fake images that look like domain Y based on real images in domain X
         fake_Y = G_XtoY(images_X)
 
         # 5. Compute the loss for D_Y
-        D_Y_loss = D_Y(fake_Y).pow(2).sum() / len(fake_Y)
+        D_Y_loss = mse_loss(D_Y(fake_Y), 0)
 
         d_fake_loss = D_X_loss + D_Y_loss
         d_fake_loss.backward()
@@ -271,12 +274,12 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         fake_X = G_YtoX(images_Y)
 
         # 2. Compute the generator loss based on domain X
-        g_loss = (D_X(fake_X) - 1).pow(2).sum() / len(fake_X)
+        g_loss = mse_loss(D_X(fake_X), 1)
 
         if opts.use_cycle_consistency_loss:
             reconstructed_Y = G_XtoY(fake_X)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            cycle_consistency_loss = (images_Y - reconstructed_Y).pow(2).sum(axis=0) / len(images_Y)
+            cycle_consistency_loss = mse_loss(images_Y, reconstructed_Y)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
@@ -294,12 +297,12 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         fake_Y = G_XtoY(images_X)
 
         # 2. Compute the generator loss based on domain Y
-        g_loss = (D_Y(fake_Y) - 1).pow(2).sum() / len(fake_Y)
+        g_loss = mse_loss(D_Y(fake_Y), 1)
 
         if opts.use_cycle_consistency_loss:
             reconstructed_X = G_YtoX(fake_Y)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            cycle_consistency_loss = (images_X - reconstructed_X).pow(2).sum() / len(images_X)
+            cycle_consistency_loss = mse_loss(images_X, reconstructed_X)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
