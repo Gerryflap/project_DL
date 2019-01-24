@@ -397,7 +397,7 @@ if __name__ == '__main__':
     opts = parser.parse_args()
 
     if opts.use_cycle_consistency_loss:
-        opts.sample_dir = 'samples_cyclegan_cycle'
+        opts.sample_dir = 'samples_cyclegan_cycle_random'
 
     if opts.load:
         opts.sample_dir = '{}_pretrained'.format(opts.sample_dir)
