@@ -49,10 +49,10 @@ class DCGenerator(nn.Module):
         ##   FILL THIS IN: CREATE ARCHITECTURE   ##
         ###########################################
 
-        # self.deconv1 = deconv(...)
-        # self.deconv2 = deconv(...)
-        # self.deconv3 = deconv(...)
-        # self.deconv4 = deconv(...)
+        self.deconv1 = deconv(noise_size, conv_dim*4, 4, padding=0, stride=1)
+        self.deconv2 = deconv(conv_dim*4, conv_dim*2, 3, padding=1, stride=2)
+        self.deconv3 = deconv(conv_dim*2, conv_dim, 3, padding=1, stride=2)
+        self.deconv4 = deconv(conv_dim, 3, 3, padding=1, stride=2, batch_norm=False)
 
     def forward(self, z):
         """Generates an image given a sample of random noise.
@@ -140,16 +140,16 @@ class DCDiscriminator(nn.Module):
         ###########################################
 
         # 32x32x3 --> 16x16xconv_dim
-        self.conv1 = conv(3, 3, conv_dim, stride=2, padding=1)
+        self.conv1 = conv(3, conv_dim, 3, stride=2, padding=1)
 
         # 16x16xconv_dim --> 8x8x2*conv_dim
-        self.conv2 = conv(conv_dim, 3, conv_dim*2, stride=2, padding=1)
+        self.conv2 = conv(conv_dim, conv_dim*2, 3, stride=2, padding=1)
 
         # 8x8x2*conv_dim --> 4x4x4*conv_dim
-        self.conv3 = conv(conv_dim*2, 3, conv_dim*4, stride=2, padding=1)
+        self.conv3 = conv(conv_dim*2, conv_dim*4, 3, stride=2, padding=1)
 
         # 4x4x4*conv_dim --> 1x1x1
-        self.conv4 = conv(conv_dim*4, 3, 1, stride=2, padding=1)
+        self.conv4 = conv(conv_dim*4, 1, 4, stride=1, padding=0, batch_norm=False)
 
     def forward(self, x):
 
