@@ -112,7 +112,7 @@ def save_samples(G, fixed_noise, iteration, opts):
     print('Saved {}'.format(path))
 
 
-def sample_noise(dim):
+def sample_noise(dim, bsize=None):
     """
     Generate a PyTorch Variable of uniform random noise.
 
@@ -124,7 +124,9 @@ def sample_noise(dim):
     - A PyTorch Variable of shape (batch_size, dim, 1, 1) containing uniform
       random noise in the range (-1, 1).
     """
-    return utils.to_var(torch.rand(batch_size, dim) * 2 - 1).unsqueeze(2).unsqueeze(3)
+    if bsize is None:
+        bsize = batch_size
+    return utils.to_var(torch.rand(bsize, dim) * 2 - 1).unsqueeze(2).unsqueeze(3)
 
 
 def sample_replay(batch_size, replay):
@@ -133,7 +135,6 @@ def sample_replay(batch_size, replay):
         i = np.random.randint(0, len(replay)-1, size=None)
         batch.append(replay[i])
     batch_t = torch.stack(batch, dim=0)
-    print("Batch_t size: ", batch_t.size())
     return batch_t
 
 
@@ -178,15 +179,18 @@ def training_loop(train_dataloader, opts):
             D_real_loss = mse_loss(D(real_images), 1) / 2
 
             # 2. Sample noise
-            noise = sample_noise(opts.noise_size)
+            if len(replay) > 1:
+                noise = sample_noise(opts.noise_size, batch_size - opts.from_replay_batch_size)
+            else:
+                noise = sample_noise(opts.noise_size, batch_size)
 
             # 3. Generate fake images from the noise
             fake_images = G(noise)
 
-            # 4 Use only half this batch for training, substitute the other half with old samples from replay
+            # 4 Merge generated images with old images
             if len(replay) > 1:
-                D_batch = fake_images[:batch_size//2 + batch_size%2]
-                D_batch = torch.cat([D_batch, sample_replay(batch_size//2, replay)], dim=0)
+                D_batch = fake_images
+                D_batch = torch.cat([D_batch, sample_replay(opts.from_replay_batch_size, replay)], dim=0)
                 D_batch = utils.to_var(D_batch)
             else:
                 D_batch = fake_images
@@ -272,7 +276,8 @@ def create_parser():
     parser.add_argument('--lr', type=float, default=0.0003, help='The learning rate (default 0.0003)')
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.999)
-    parser.add_argument('--replay_size', type=int, default=1000)
+    parser.add_argument('--replay_size', type=int, default=10000)
+    parser.add_argument('--from_replay_batch_size', type=int, default=4)
 
     # Data sources
     parser.add_argument('--emoji', type=str, default='Apple', choices=['Apple', 'Facebook', 'Windows'], help='Choose the type of emojis to generate.')
