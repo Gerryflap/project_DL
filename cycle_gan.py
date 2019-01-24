@@ -276,7 +276,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         if opts.use_cycle_consistency_loss:
             reconstructed_Y = G_XtoY(fake_X)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            # cycle_consistency_loss = ...
+            cycle_consistency_loss = (images_Y - reconstructed_Y).pow(2).sum() / len(images_Y)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
@@ -299,7 +299,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         if opts.use_cycle_consistency_loss:
             reconstructed_X = G_YtoX(fake_Y)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            # cycle_consistency_loss = ...
+            cycle_consistency_loss = (images_X - reconstructed_X).pow(2).sum() / len(images_X)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
