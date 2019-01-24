@@ -161,7 +161,7 @@ def training_loop(train_dataloader, opts):
 
             # FILL THIS IN
             # 1. Compute the discriminator loss on real images
-            D_real_loss = mse(D(real_images), utils.to_var(torch.Tensor(np.ones(len(real_images)))))
+            D_real_loss = mse(D(real_images), utils.to_var(torch.Tensor(np.ones(len(real_images))))) / 2
 
             # 2. Sample noise
             noise = sample_noise(opts.noise_size)
@@ -170,10 +170,10 @@ def training_loop(train_dataloader, opts):
             fake_images = G(noise)
 
             # 4. Compute the discriminator loss on the fake images
-            D_fake_loss = mse(D(fake_images), utils.to_var(torch.Tensor(np.zeros(len(fake_images)))))
+            D_fake_loss = mse(D(fake_images), utils.to_var(torch.Tensor(np.zeros(len(fake_images))))) / 2
 
             # 5. Compute the total discriminator loss
-            D_total_loss = (D_real_loss + D_fake_loss) / 2
+            D_total_loss = D_real_loss + D_fake_loss
 
             D_total_loss.backward()
             d_optimizer.step()
