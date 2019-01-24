@@ -144,6 +144,8 @@ def training_loop(train_dataloader, opts):
 
     total_train_iters = opts.num_epochs * len(train_dataloader)
 
+    mse = torch.nn.MSELoss(reduction='sum')
+
     for epoch in range(opts.num_epochs):
 
         for batch in train_dataloader:
@@ -159,19 +161,20 @@ def training_loop(train_dataloader, opts):
 
             # FILL THIS IN
             # 1. Compute the discriminator loss on real images
-            # D_real_loss = ...
+            D_real_loss = mse(D(real_images), labels.float())
 
             # 2. Sample noise
-            # noise = ...
+            noise = sample_noise(opts.noise_size)
 
             # 3. Generate fake images from the noise
-            # fake_images = ...
+            fake_images = G(noise)
 
             # 4. Compute the discriminator loss on the fake images
-            # D_fake_loss = ...
+            # D_fake_loss = mse(D(fake_images), utils.to_var(len(fake_images) * [0]))
+            D_fake_loss = mse(D(fake_images), utils.to_var(torch.Tensor(np.zeros(len(fake_images)))))
 
             # 5. Compute the total discriminator loss
-            # D_total_loss = ...
+            D_total_loss = (D_real_loss + D_fake_loss) / 2
 
             D_total_loss.backward()
             d_optimizer.step()
@@ -184,13 +187,13 @@ def training_loop(train_dataloader, opts):
 
             # FILL THIS IN
             # 1. Sample noise
-            # noise = ...
+            noise = sample_noise(opts.noise_size)
 
             # 2. Generate fake images from the noise
-            # fake_images = ...
+            fake_images = G(noise)
 
             # 3. Compute the generator loss
-            # G_loss = ...
+            G_loss = mse(D(fake_images), utils.to_var(torch.Tensor(np.ones(len(fake_images)))))
 
             G_loss.backward()
             g_optimizer.step()
