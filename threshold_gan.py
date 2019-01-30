@@ -258,8 +258,8 @@ def create_parser():
     parser.add_argument('--emoji', type=str, default='Apple', choices=['Apple', 'Facebook', 'Windows'], help='Choose the type of emojis to generate.')
 
     # Directories and checkpoint/sample iterations
-    parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints_vanilla')
-    parser.add_argument('--sample_dir', type=str, default='./samples_vanilla')
+    parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints_threshold')
+    parser.add_argument('--sample_dir', type=str, default='./samples_threshold')
     parser.add_argument('--log_step', type=int , default=10)
     parser.add_argument('--sample_every', type=int , default=200)
     parser.add_argument('--checkpoint_every', type=int , default=400)
