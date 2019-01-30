@@ -16,8 +16,8 @@ def get_cifar_loader(image_type, opts):
                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
                 ])
 
-    train_dataset = datasets.CIFAR10('./', train=True, transform=transform)
-    test_dataset = datasets.CIFAR10('./', train=False, transform=transform)
+    train_dataset = datasets.CIFAR10('./', train=True, transform=transform, download=True)
+    test_dataset = datasets.CIFAR10('./', train=False, transform=transform, download=True)
 
     train_mask = [i for i in range(len(train_dataset)) if train_dataset.train_labels[i] == image_type]
     test_mask = [i for i in range(len(test_dataset)) if test_dataset.test_labels[i] == image_type]
