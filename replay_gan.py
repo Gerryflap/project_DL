@@ -111,7 +111,6 @@ def save_samples(G, fixed_noise, iteration, opts):
     scipy.misc.imsave(path, grid)
     print('Saved {}'.format(path))
 
-
 def sample_noise(dim, bsize=None):
     """
     Generate a PyTorch Variable of uniform random noise.
@@ -188,24 +187,23 @@ def training_loop(train_dataloader, opts):
             fake_images = G(noise)
 
             # 4 Merge generated images with old images
-            if len(replay) > 1:
-                D_batch = fake_images
-                D_batch = torch.cat([D_batch, sample_replay(opts.from_replay_batch_size, replay)], dim=0)
+            if len(replay) > opts.min_replay_size:
+                D_batch = sample_replay(opts.from_replay_batch_size, replay)
                 D_batch = utils.to_var(D_batch)
+                D_fake_replay_loss = mse_loss(D(D_batch), 0) / 2
             else:
-                D_batch = fake_images
-
+                D_fake_replay_loss = utils.to_var(torch.zeros(1))
             # 5. Compute the discriminator loss on the fake images
-            D_fake_loss = mse_loss(D(D_batch), 0) / 2
+            D_fake_loss = mse_loss(D(fake_images), 0) / 2
 
             # 6. Compute the total discriminator loss
-            D_total_loss = D_real_loss + D_fake_loss
+            D_total_loss = D_real_loss + D_fake_loss + D_fake_replay_loss
 
             D_total_loss.backward()
             d_optimizer.step()
 
             # 7. Add samples to replay and cut off replay if necessary
-            replay += fake_images.unbind(dim=0)
+            replay += fake_images.clone().unbind(dim=0)
             if len(replay) > opts.replay_size:
                 replay = replay[len(replay)-opts.replay_size:]
 
@@ -231,8 +229,8 @@ def training_loop(train_dataloader, opts):
 
             # Print the log info
             if iteration % opts.log_step == 0:
-                print('Iteration [{:4d}/{:4d}] | D_real_loss: {:6.4f} | D_fake_loss: {:6.4f} | G_loss: {:6.4f}'.format(
-                       iteration, total_train_iters, D_real_loss.data[0], D_fake_loss.data[0], G_loss.data[0]))
+                print('Iteration [{:4d}/{:4d}] | D_real_loss: {:6.4f} | D_fake_loss: {:6.4f} | G_loss: {:6.4f} | D_fake_replay_loss: {:6.4}'.format(
+                       iteration, total_train_iters, D_real_loss.data[0], D_fake_loss.data[0], G_loss.data[0], D_fake_replay_loss.data[0]))
 
             # Save the generated samples
             if iteration % opts.sample_every == 0:
@@ -277,6 +275,7 @@ def create_parser():
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.999)
     parser.add_argument('--replay_size', type=int, default=10000)
+    parser.add_argument('--min_replay_size', type=int, default=1000)
     parser.add_argument('--from_replay_batch_size', type=int, default=4)
 
     # Data sources
