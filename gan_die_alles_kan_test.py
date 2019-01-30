@@ -333,8 +333,13 @@ def main(opts):
     """
 
     # Create train and test dataloaders for images from the two domains X and Y
-    dataloader_X, test_dataloader_X = get_emoji_loader(emoji_type=opts.X, opts=opts)
-    dataloader_Y, test_dataloader_Y = get_emoji_loader(emoji_type=opts.Y, opts=opts)
+    # dataloader_X, test_dataloader_X = get_emoji_loader(emoji_type=opts.X, opts=opts)
+    # dataloader_Y, test_dataloader_Y = get_emoji_loader(emoji_type=opts.Y, opts=opts)
+
+    from data_loader_cifar import get_cifar_loader
+
+    dataloader_X, test_dataloader_X = get_cifar_loader(2, opts)
+    dataloader_Y, test_dataloader_Y = get_cifar_loader(4, opts)
 
     # Create checkpoint and sample directories
     utils.create_dir(opts.checkpoint_dir)

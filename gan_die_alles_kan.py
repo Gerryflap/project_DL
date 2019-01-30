@@ -13,7 +13,7 @@ class CycleGenerator(nn.Module):
     """Defines the architecture of the generator network.
        Note: Both generators G_XtoY and G_YtoX have the same architecture in this assignment.
     """
-    def __init__(self, conv_dim=64, noise_dim=16, init_zero_weights=False):
+    def __init__(self, conv_dim=64, noise_dim=2, init_zero_weights=False):
         super(CycleGenerator, self).__init__()
         self.conv_dim = conv_dim
         self.noise_dim = noise_dim
