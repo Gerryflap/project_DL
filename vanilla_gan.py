@@ -134,6 +134,9 @@ def save_gradient_pic(D, fixed_generated_images, iteration, opts):
     path = os.path.join(opts.sample_dir, 'gradients-{:06d}.png'.format(iteration))
     loss.backward()
     gradients = utils.to_data(pic.grad)
+
+    # Only red channel
+    gradients[:, :] = np.sqrt(np.sum(gradients**2, axis=1, keepdims=True))
     grid = create_image_grid(gradients)
     scipy.misc.imsave(path, grid)
 
