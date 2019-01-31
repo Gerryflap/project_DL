@@ -175,6 +175,9 @@ def save_samples(iteration, fixed_Y, fixed_X, G_YtoX, G_XtoY, opts):
     print('Saved {}'.format(path))
 
 
+def l1_loss(X, Y):
+    return torch.abs(X - Y).mean()
+
 def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader_Y, opts):
     """Runs the training loop.
         * Saves checkpoint every opts.checkpoint_every iterations
@@ -187,7 +190,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
     else:
         G_XtoY, G_YtoX, D_X, D_Y = create_model(opts)
 
-    l1_loss = torch.nn.L1Loss()
+    # l1_loss = torch.nn.L1Loss(reduce=True, size_average=True, reduction='mean')
     g_params = list(G_XtoY.parameters()) + list(G_YtoX.parameters())  # Get generator parameters
     d_params = list(D_X.parameters()) + list(D_Y.parameters())  # Get discriminator parameters
 
