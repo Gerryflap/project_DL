@@ -127,6 +127,19 @@ def sample_noise(dim):
     return utils.to_var(torch.rand(batch_size, dim) * 2 - 1).unsqueeze(2).unsqueeze(3)
 
 
+def save_gradient_pic(D, fixed_generated_images, iteration, opts):
+    pic = utils.to_var(fixed_generated_images)
+    pic.requires_grad_(True)
+    loss = mse_loss(D(pic), 1)
+    path = os.path.join(opts.sample_dir, 'gradients-{:06d}.png'.format(iteration))
+    loss.backward()
+    gradients = utils.to_data(pic.grad)
+    grid = create_image_grid(gradients)
+    scipy.misc.imsave(path, grid)
+
+
+
+
 def training_loop(train_dataloader, opts):
     """Runs the training loop.
         * Saves checkpoints every opts.checkpoint_every iterations
@@ -207,6 +220,7 @@ def training_loop(train_dataloader, opts):
             # Save the generated samples
             if iteration % opts.sample_every == 0:
                 save_samples(G, fixed_noise, iteration, opts)
+                save_gradient_pic(D, G(fixed_noise), iteration, opts)
 
             # Save the model parameters
             if iteration % opts.checkpoint_every == 0:
