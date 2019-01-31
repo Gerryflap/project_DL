@@ -173,6 +173,23 @@ def save_samples(iteration, fixed_Y, fixed_X, G_YtoX, G_XtoY, opts):
     path = os.path.join(opts.sample_dir, 'sample-{:06d}-Y-X.png'.format(iteration))
     scipy.misc.imsave(path, merged)
     print('Saved {}'.format(path))
+    
+def save_reconstructions(iteration, fixed_Y, fixed_X, reconstructed_Y, reconstructed_X, opts):
+    """Saves samples from both generators X->Y and Y->X.
+    """
+
+    X, reconstructed_X = utils.to_data(fixed_X), utils.to_data(reconstructed_X)
+    Y, reconstructed_Y = utils.to_data(fixed_Y), utils.to_data(reconstructed_Y)
+
+    merged = merge_images(X, reconstructed_X, opts)
+    path = os.path.join(opts.sample_dir, 'sample-{:06d}-X-X.png'.format(iteration))
+    scipy.misc.imsave(path, merged)
+    print('Saved {}'.format(path))
+
+    merged = merge_images(Y, reconstructed_Y, opts)
+    path = os.path.join(opts.sample_dir, 'sample-{:06d}-Y-Y.png'.format(iteration))
+    scipy.misc.imsave(path, merged)
+    print('Saved {}'.format(path))
 
 
 def l1_loss(X, Y):
@@ -330,6 +347,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         # Save the generated samples
         if iteration % opts.sample_every == 0:
             save_samples(iteration, fixed_Y, fixed_X, G_YtoX, G_XtoY, opts)
+            save_reconstructions(iteration, fixed_Y, fixed_X, G_XtoY(G_YtoX(fixed_Y)), G_YtoX(G_XtoY(fixed_X)), opts)
 
 
         # Save the model parameters
