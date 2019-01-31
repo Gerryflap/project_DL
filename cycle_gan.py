@@ -187,6 +187,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
     else:
         G_XtoY, G_YtoX, D_X, D_Y = create_model(opts)
 
+    l1_loss = torch.nn.L1Loss()
     g_params = list(G_XtoY.parameters()) + list(G_YtoX.parameters())  # Get generator parameters
     d_params = list(D_X.parameters()) + list(D_Y.parameters())  # Get discriminator parameters
 
@@ -279,7 +280,10 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         if opts.use_cycle_consistency_loss:
             reconstructed_Y = G_XtoY(fake_X)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            cycle_consistency_loss = mse_loss(images_Y, reconstructed_Y)
+            if not opts.use_l1_loss:
+                cycle_consistency_loss = mse_loss(images_Y, reconstructed_Y)
+            else:
+                cycle_consistency_loss = l1_loss(images_Y, reconstructed_Y)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
@@ -302,7 +306,10 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         if opts.use_cycle_consistency_loss:
             reconstructed_X = G_YtoX(fake_Y)
             # 3. Compute the cycle consistency loss (the reconstruction loss)
-            cycle_consistency_loss = mse_loss(images_X, reconstructed_X)
+            if not opts.use_l1_loss:
+                cycle_consistency_loss = mse_loss(images_X, reconstructed_X)
+            else:
+                cycle_consistency_loss = l1_loss(images_X, reconstructed_X)
             g_loss += cycle_consistency_loss
 
         g_loss.backward()
@@ -374,6 +381,7 @@ def create_parser():
     parser.add_argument('--lr', type=float, default=0.0003, help='The learning rate (default 0.0003)')
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.999)
+    parser.add_argument('--use_l1_loss', action='store_true', default=False)
 
     # Data sources
     parser.add_argument('--X', type=str, default='Apple', choices=['Apple', 'Windows'], help='Choose the type of images for domain X.')
